@@ -703,9 +703,8 @@ int32_t OffsetFinder::FindPropertyFlagsOffset()
 {
 	std::vector<std::pair<void*, EPropertyFlags>> Infos;
 
-
-	UEStruct Guid = ObjectArray::FindStructFast("Guid");
-	UEStruct Color = ObjectArray::FindStructFast("Color");
+	const UEStruct Guid = ObjectArray::FindStructFast("Guid");
+	const UEStruct Color = ObjectArray::FindStructFast("Color");
 
 	constexpr EPropertyFlags GuidMemberFlags = EPropertyFlags::Edit | EPropertyFlags::ZeroConstructor | EPropertyFlags::SaveGame | EPropertyFlags::IsPlainOldData | EPropertyFlags::NoDestructor | EPropertyFlags::HasGetValueTypeHash;
 	constexpr EPropertyFlags ColorMemberFlags = EPropertyFlags::Edit | EPropertyFlags::BlueprintVisible | EPropertyFlags::ZeroConstructor | EPropertyFlags::SaveGame | EPropertyFlags::IsPlainOldData | EPropertyFlags::NoDestructor | EPropertyFlags::HasGetValueTypeHash;
@@ -734,15 +733,12 @@ int32_t OffsetFinder::FindOffsetInternalOffset()
 {
 	std::vector<std::pair<void*, int32_t>> Infos;
 
-	UEStruct Color = ObjectArray::FindStructFast("Color");
+	const UEStruct Color = ObjectArray::FindStructFast("Color");
+	const UEStruct IntVector = ObjectArray::FindStructFast("IntVector");
 
 	Infos.push_back({ Color.FindMember("B").GetAddress(), 0x00 });
 	Infos.push_back({ Color.FindMember("G").GetAddress(), 0x01 });
-	Infos.push_back({ Color.FindMember("R").GetAddress(), 0x02 });
-
-	// Thanks to the ue5 dev who decided FColor::R should be spelled FColor::r
-	if (Infos[2].first == nullptr) [[unlikely]]
-		Infos[2].first = Color.FindMember("r").GetAddress();
+	Infos.push_back({ IntVector.FindMember("Y").GetAddress(), 0x04 });
 
 	return FindOffset(Infos);
 }
