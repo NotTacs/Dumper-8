@@ -901,6 +901,15 @@ uint64_t OffsetFinder::FindMemoryRealloc()
 {
 	Memcury::Scanner StringRef = Memcury::Scanner::FindStringRef(L"LogCountedInstances");
 
+	Memcury::Scanner SigScan = Memcury::Scanner::FindPattern(
+		"48 89 5C 24 08 48 89 74 24 10 57 48 83 EC ? 48 8B F1 41 8B D8 48 8B 0D ? ? ?"); // tested on 4.27 ft 18.40 it works -> 0x197EBDC IT WORKS!
+
+	if (!SigScan.Get())
+	{
+		std::cout << "\nDumper-8: [FMemory::Realloc] couldn't find signature.\n" << std::endl;
+		return 0;
+	}
+
 	if (!StringRef.Get())
 	{
 		std::cout << "\nDumper-8: [FMemory::Realloc] couldn't find stringRef.\n" << std::endl;
@@ -909,5 +918,9 @@ uint64_t OffsetFinder::FindMemoryRealloc()
 
 	uint64 FMemoryReallocAddr = StringRef.ScanFor({ 0xE8 }).RelativeOffset(1).Get();
 
-	return FMemoryReallocAddr - uintptr_t(GetModuleHandle(0));
+	uint64_t FMemoryReallocAddr22 = SigScan.Get(); // fixed it works nvm
+
+
+	/*return FMemoryReallocAddr - uintptr_t(GetModuleHandle(0)); Coment for testing on s18 but add it back thx*/
+	return FMemoryReallocAddr22 - reinterpret_cast<uintptr_t>(GetModuleHandle(0));
 }
