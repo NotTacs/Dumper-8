@@ -887,15 +887,26 @@ uint64_t OffsetFinder::FindMemoryFree()
 {
 	Memcury::Scanner StringRef = Memcury::Scanner::FindStringRef(L"LogCountedInstances");
 
+	Memcury::Scanner SigScan = Memcury::Scanner::FindPattern(
+		"48 85 C9 0F 84 ? ? ? ? 53 48 83 EC 20 48 89 7C 24 ? 48 8B D9"); // tested on 18.40 and 19.10 it get the right offset chat on 18.40 is -> 0xCEDBC0
+
 	if (!StringRef.Get())
 	{
 		std::cout << "\nDumper-8: [FMemory::Free] couldn't find stringRef.\n" << std::endl;
 		return 0;
 	}
 
+	if (!SigScan.Get())
+	{
+		std::cout << "\nDumper-8: [FMemory::Free] couldn't find signature at this point ur dtc.\n" << std::endl;
+		return 0;
+	}
+
 	uint64 FMemoryFreeAddr = StringRef.ScanFor({ 0xE8 }, true, 1).RelativeOffset(1).Get();
 
-	return FMemoryFreeAddr - uintptr_t(GetModuleHandle(0));
+	uint64_t FMemoryFreeAddr22 = SigScan.Get();
+
+	return FMemoryFreeAddr22 - uintptr_t(GetModuleHandle(0));
 }
 uint64_t OffsetFinder::FindMemoryRealloc()
 {
