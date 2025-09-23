@@ -921,7 +921,7 @@ uint64_t OffsetFinder::FindMemoryRealloc()
 
 	if (!SigScan.Get())
 	{
-		std::cout << "\nDumper-8: [FMemory::Realloc] couldn't find signature you are not in ur 4.27 getting right 1 wait...\n" << std::endl;
+		std::cout << "\nDumper-8: [FMemory::Realloc] couldn't find signature you are not in ue 4.27 getting right 1 wait...\n" << std::endl;
 		//return 0; will make only scan on 4.27 im on phone
 	}
 
