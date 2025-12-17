@@ -637,10 +637,18 @@ void CppGenerator::GenerateStruct(const StructWrapper& Struct, StreamType& Struc
 
 	static int Test = (std::stof(Settings::Generator::GameVersion) * 100);
 
+	printf("Test: %d\n", Test);
+
 	if (UniqueName == "FFastArraySerializer" && Test <= 422)
 	{
 		StructFile << R"(
-struct FFastArraySerializerItem;
+struct FFastArraySerializerItem
+{
+public:
+	int32                                         ReplicationID;                                     // 0x0000(0x0004)(ZeroConstructor, IsPlainOldData, RepSkip, NoDestructor, HasGetValueTypeHash, NativeAccessSpecifierPublic)
+	int32                                         ReplicationKey;                                    // 0x0004(0x0004)(ZeroConstructor, IsPlainOldData, RepSkip, NoDestructor, HasGetValueTypeHash, NativeAccessSpecifierPublic)
+	int32                                         MostRecentArrayReplicationKey;                     // 0x0008(0x0004)(ZeroConstructor, IsPlainOldData, RepSkip, NoDestructor, HasGetValueTypeHash, NativeAccessSpecifierPublic)
+};
 
 struct alignas(0x08) FFastArraySerializer
 {
@@ -693,7 +701,13 @@ public:
 	else if (UniqueName == "FFastArraySerializer")
 	{
 		StructFile << R"(
-struct FFastArraySerializerItem;
+struct FFastArraySerializerItem
+{
+public:
+	int32                                         ReplicationID;                                     // 0x0000(0x0004)(ZeroConstructor, IsPlainOldData, RepSkip, NoDestructor, HasGetValueTypeHash, NativeAccessSpecifierPublic)
+	int32                                         ReplicationKey;                                    // 0x0004(0x0004)(ZeroConstructor, IsPlainOldData, RepSkip, NoDestructor, HasGetValueTypeHash, NativeAccessSpecifierPublic)
+	int32                                         MostRecentArrayReplicationKey;                     // 0x0008(0x0004)(ZeroConstructor, IsPlainOldData, RepSkip, NoDestructor, HasGetValueTypeHash, NativeAccessSpecifierPublic)
+};
 
 struct FFastArraySerializer
 {
@@ -740,6 +754,9 @@ public:
 };)";
 		return;
 	}
+
+	if (UniqueName == "FFastArraySerializerItem")
+		return;
 
 	std::string UniqueSuperName;
 
@@ -5208,23 +5225,20 @@ namespace UC
 	class FMemory
 	{
 	public:
-		static void Free(void* Ptr)
-		{
-)";
-
-	UEContainersHeader << std::format(R"(
-            static void (*FMemoryFree)(void* Ptr) = decltype(FMemoryFree)(uintptr_t(GetModuleHandle(0)) + 0x{:08X}); )", Off::FMemory::Free);
-	UEContainersHeader << R"(
-			return FMemoryFree(Ptr);
-		}
-
 		static void* Realloc(void* Ptr, uint64 Size, uint32 Alignment)
 		{
 )";
 	UEContainersHeader << std::format(R"(
-            static void* (*FMemoryRealloc)(void* Ptr, uint64 Size, uint32 Alignment) = decltype(FMemoryRealloc)(uintptr_t(GetModuleHandle(0)) + 0x{:08X}); )", Off::FMemory::Realloc); 
+            static void* (*FMemoryRealloc)(void* Ptr, uint64 Size, uint32 Alignment) = decltype(FMemoryRealloc)(uintptr_t(GetModuleHandle(0)) + 0x{:08X}); )", Off::FMemory::Realloc);
 	UEContainersHeader << R"(		
             return FMemoryRealloc(Ptr, Size, Alignment);
+		}
+
+		static void Free(void* Ptr)
+		{
+)";
+	UEContainersHeader << R"(
+			return Realloc(Ptr,0,0);
 		}
 	};
 )";
